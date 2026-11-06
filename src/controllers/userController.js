@@ -1,6 +1,8 @@
 
 const userService = require('../services/userService');
 
+const VALID_ROLE = ['admin', 'pemilik_umkm', 'pembeli'];
+
 const sendError = (res, code, message) =>
   res.status(code).json({ success: false, message });
 
@@ -13,6 +15,31 @@ const getUsers = async (req, res) => {
 
     if ((id_user || role) && data.length === 0) {
       return sendError(res, 404, 'Data user tidak ditemukan');
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Data user berhasil diambil',
+      data,
+    });
+  } catch (err) {
+    console.error(err);
+    sendError(res, 500, 'Terjadi kesalahan pada server');
+  }
+};
+
+const getUserById = async (req, res) => {
+  try {
+    const { id_user } = req.params;
+
+    if (!isValidId(id_user)) {
+      return sendError(res, 400, 'ID user tidak valid');
+    }
+
+    const [data] = await userService.getAll(id_user);
+
+    if (!data) {
+      return sendError(res, 404, 'User tidak ditemukan');
     }
 
     res.status(200).json({
@@ -97,4 +124,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, updateUser, deleteUser };
+module.exports = { getUsers, getUserById, updateUser, deleteUser };
